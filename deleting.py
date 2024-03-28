@@ -7,7 +7,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(name)
 
 # Define the token for your bot
-TOKEN = "your_token_here"
+TOKEN = "6920632678:AAEYkZXsMgddiW7EmL7tiabZvyQembTV624"
 
 # Define the function to delete messages after 30 minutes
 def delete_messages(update, context):
