@@ -1,46 +1,58 @@
+import os
 import logging
+from telebot import TeleBot, types
+from flask import Flask, request
+import threading
+
+import telebot
+from telebot import types
 import time
-from telegram.ext import Updater, MessageHandler, Filters
+from threading import Timer
 
-# Set up logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger(name)
+TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN'
+bot = telebot.TeleBot(TOKEN)
 
-# Define the token for your bot
-TOKEN = "6920632678:AAEYkZXsMgddiW7EmL7tiabZvyQembTV624"
+# This dictionary will hold the messages and their deletion timers
+messages_to_delete = {}
 
-# Define the function to delete messages after 30 minutes
-def delete_messages(update, context):
-    # Get the message object
-    message = update.message
-    # Get the chat ID of the group
-    chat_id = message.chat_id
-    # Get the current timestamp
-    current_time = time.time()
-    # Get the timestamp of the message
-    message_time = message.date.timestamp()
-    # Calculate the time difference in seconds
-    time_difference = current_time - message_time
-    # If the time difference is greater than 30 minutes (1800 seconds), delete the message
-    if time_difference >= 3600:
-        context.bot.delete_message(chat_id=chat_id, message_id=message.message_id)
+def schedule_message_deletion(chat_id, message_id, delay):
+    # Schedule the deletion of a specific message after 'delay' seconds
+    Timer(delay, delete_message, args=(chat_id, message_id)).start()
 
-# Define the main function to start the bot
-def main():
-    # Create the Updater and pass it your bot's token
-    updater = Updater(TOKEN)
-    
-    # Get the dispatcher to register handlers
-    dispatcher = updater.dispatcher
-    
-    # Add a handler to listen for new messages in the group
-    dispatcher.add_handler(MessageHandler(Filters.all, delete_messages))
-    
-    # Start the Bot
-    updater.start_polling()
-    
-    # Run the bot until you press Ctrl-C
-    updater.idle()
+def delete_message(chat_id, message_id):
+    try:
+        bot.delete_message(chat_id, message_id)
+    except Exception as e:
+        print(f"Error deleting message: {e}")
 
-if name == 'main':
-    main()
+@bot.message_handler(commands=['start', 'help'])
+def send_welcome(message):
+    bot.reply_to(message, "Hello! I'm a bot that will delete messages after a given time period. Use /settimer to set the deletion interval.")
+
+@bot.message_handler(commands=['settimer'])
+def set_timer(message):
+    try:
+        # Split the message text to get the timer value
+        parts = message.text.split()
+        if len(parts) > 1:
+            delay = int(parts[1])
+            bot.reply_to(message, f"Timer set to {delay} seconds. Messages will now be deleted after this interval.")
+            # Store the delay with the chat id
+            messages_to_delete[message.chat.id] = delay
+        else:
+            bot.reply_to(message, "Please specify the time in seconds after /settimer command.")
+    except ValueError:
+        bot.reply_to(message, "Please enter a valid number of seconds after /settimer command.")
+
+@bot.message_handler(func=lambda message: True)
+def echo_all(message):
+    # Echo the received message
+    bot.reply_to(message, message.text)
+
+    # Check if the chat has a deletion timer set
+    if message.chat.id in messages_to_delete:
+        delay = messages_to_delete[message.chat.id]
+        # Schedule this message to be deleted after the specified delay
+        schedule_message_deletion(message.chat.id, message.message_id, delay)
+
+bot.polling()
