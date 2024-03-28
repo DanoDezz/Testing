@@ -3,7 +3,7 @@ from telebot import types
 import time
 from threading import Timer
 
-TOKEN = '6920632678:AAEYkZXsMgddiW7EmL7tiabZvyQembTV624'
+TOKEN = 'enter token'
 bot = telebot.TeleBot(TOKEN)
 
 # This dictionary will hold the messages and their deletion timers
