@@ -1,15 +1,9 @@
-import os
-import logging
-from telebot import TeleBot, types
-from flask import Flask, request
-import threading
-
 import telebot
 from telebot import types
 import time
 from threading import Timer
 
-TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN'
+TOKEN = '6920632678:AAEYkZXsMgddiW7EmL7tiabZvyQembTV624'
 bot = telebot.TeleBot(TOKEN)
 
 # This dictionary will hold the messages and their deletion timers
@@ -21,9 +15,10 @@ def schedule_message_deletion(chat_id, message_id, delay):
 
 def delete_message(chat_id, message_id):
     try:
-        bot.delete_message(chat_id, message_id)
+        bot.delete_message(chat_id, message_id, )
     except Exception as e:
-        print(f"Error deleting message: {e}")
+        print(f"1 + 1")
+
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
@@ -47,7 +42,7 @@ def set_timer(message):
 @bot.message_handler(func=lambda message: True)
 def echo_all(message):
     # Echo the received message
-    bot.reply_to(message, message.text)
+#    bot.reply_to(message, message.text)
 
     # Check if the chat has a deletion timer set
     if message.chat.id in messages_to_delete:
