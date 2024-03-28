@@ -11,7 +11,7 @@ from threading import Timer
 
 TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN'
 bot = telebot.TeleBot(TOKEN)
-
+chat_id = 'enter chat id'
 # This dictionary will hold the messages and their deletion timers
 messages_to_delete = {}
 
